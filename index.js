@@ -1,24 +1,26 @@
 // 1️⃣ Importuri
-const { 
-  Client, 
-  GatewayIntentBits, 
-  EmbedBuilder, 
-  ActionRowBuilder, 
-  ButtonBuilder, 
-  ButtonStyle, 
-  ChannelType, 
-  PermissionsBitField 
+const {
+  Client,
+  GatewayIntentBits,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ChannelType,
+  PermissionsBitField
 } = require('discord.js');
 
-const keepAlive = require('./keep_alive'); 
-keepAlive(); // pornește serverul keep-alive
+// === Server Keep-Alive ===
+const keepAlive = require('./keep_alive');
+keepAlive(); // pornește serverul de uptime
 
-const client = new Client({ 
+// === Client Discord ===
+const client = new Client({
   intents: [
-    GatewayIntentBits.Guilds, 
-    GatewayIntentBits.GuildMessages, 
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent
-  ] 
+  ]
 });
 
 // 2️⃣ Token și rol admin
@@ -47,13 +49,13 @@ client.on('messageCreate', async (message) => {
         `<a:emoji_21:1437163698161717468> Available 24/7 for your convenience!`
       )
       .setColor('#89CFF0')
-      .setThumbnail('https://cdn.discordapp.com/emojis/1437165310775132160.gif') // 👑 coroana animată dreapta sus
-      .setImage('https://i.imgur.com/rCQ33gA.gif'); // Banner jos
+      .setThumbnail('https://cdn.discordapp.com/emojis/1437165310775132160.gif')
+      .setImage('https://i.imgur.com/rCQ33gA.gif');
 
     const button = new ButtonBuilder()
       .setCustomId('create_ticket')
       .setLabel('Create Ticket')
-      .setEmoji('1437155312527347915') // 🎟️ emoji_16
+      .setEmoji('🎟️')
       .setStyle(ButtonStyle.Secondary);
 
     const row = new ActionRowBuilder().addComponents(button);
@@ -62,10 +64,11 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-// 6️⃣ Interacțiuni
+// 6️⃣ Interacțiuni (ticket create / close)
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isButton()) return;
 
+  // ✅ Creare ticket
   if (interaction.customId === 'create_ticket') {
     await interaction.deferReply({ ephemeral: true });
 
@@ -99,7 +102,7 @@ client.on('interactionCreate', async (interaction) => {
           `<a:emoji_21:1437163698161717468> Staff will respond shortly.`
         )
         .setColor('#89CFF0')
-        .setThumbnail('https://cdn.discordapp.com/emojis/1437165310775132160.gif') // 👑 coroana animată
+        .setThumbnail('https://cdn.discordapp.com/emojis/1437165310775132160.gif')
         .setImage('https://i.imgur.com/rCQ33gA.gif')
         .setTimestamp();
 
@@ -112,7 +115,7 @@ client.on('interactionCreate', async (interaction) => {
 
       await ticketChannel.send({ embeds: [ticketEmbed], components: [row] });
 
-      // Mesaj DM către user
+      // trimite DM
       await interaction.user.send({
         embeds: [
           new EmbedBuilder()
@@ -125,11 +128,11 @@ client.on('interactionCreate', async (interaction) => {
             .setThumbnail('https://cdn.discordapp.com/emojis/1437165310775132160.gif')
             .setImage('https://i.imgur.com/rCQ33gA.gif')
         ]
-      }).catch(() => {}); // ignoră erorile DM dacă userul are mesajele private închise
+      }).catch(() => {}); // ignoră dacă DM-urile sunt blocate
 
-      await interaction.editReply({ 
-        content: `✅ Your ticket has been created! Go to ${ticketChannel} to describe your issue.`, 
-        ephemeral: true 
+      await interaction.editReply({
+        content: `✅ Your ticket has been created! Go to ${ticketChannel} to describe your issue.`,
+        ephemeral: true
       });
 
     } catch (err) {
@@ -138,6 +141,7 @@ client.on('interactionCreate', async (interaction) => {
     }
   }
 
+  // 🔒 Închidere ticket
   if (interaction.customId === 'close_ticket') {
     await interaction.reply({ content: '🔒 Closing ticket...', ephemeral: true });
     setTimeout(async () => {
